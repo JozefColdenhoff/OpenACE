@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -euo pipefail
 
 cd src/codec_libraries
@@ -7,6 +6,7 @@ cd src/codec_libraries
 # Setup liblc3
 git clone https://github.com/google/liblc3.git
 cd liblc3
+git reset --hard 73bbc00 # v1.1.1
 make -j 
 make tools 
 cd .. 
@@ -26,6 +26,7 @@ unzip 26442-i00.zip
 rm 26442-i00.zip
 rm 26442-i00.doc
 unzip 26442-i00-ANSI-C_source_code.zip
+rm 26442-i00-ANSI-C_source_code.zip
 mv c-code EVS_3GPP
 cd EVS_3GPP/
 make

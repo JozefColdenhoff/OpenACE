@@ -31,3 +31,7 @@ Uses binary audio files for input and output, so wrapper converts them to this f
 EVS_cod -q <bitrate> <sample rate kHz> <in.48k> <out.192>
 EVS_dec -q <sample rate kHz> <out.192> <out.48k>
 ```
+
+
+# TODO:
+- See how to make opus-tools self-contained in the repo
