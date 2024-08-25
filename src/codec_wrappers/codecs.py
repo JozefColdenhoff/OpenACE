@@ -282,7 +282,11 @@ class EVSCodec(AbstractCodec):
             bitstream_file,
         ]
         
-        subprocess.run(command, check=True)
+        subprocess.run(
+            command, 
+            check=True, 
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
 
     def _decode(self, bitstream_file: str, raw_file: str) -> None:
         """Decode the EVS bitstream to a raw PCM file."""
@@ -294,7 +298,11 @@ class EVSCodec(AbstractCodec):
             raw_file,
         ]
         
-        subprocess.run(command, check=True)
+        subprocess.run(
+            command, 
+            check=True, 
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
 
     def _wav_to_raw(self, wav_file: str, raw_file: str) -> None:
         """Convert a WAV file to raw PCM format expected by the EVS codec."""
