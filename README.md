@@ -35,3 +35,8 @@ EVS_dec -q <sample rate kHz> <out.192> <out.48k>
 
 # TODO:
 - See how to make opus-tools self-contained in the repo
+
+
+# DEPS 
+- opus-tools `sudo apt install opus-tools`
+- bazel 'https://bazel.build/install'

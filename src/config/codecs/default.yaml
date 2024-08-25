@@ -1,0 +1,14 @@
+lc3:
+  _target_: codec_wrappers.codecs.LC3Codec
+  lc3_path: libraries/liblc3
+
+lc3plus:
+  _target_: codec_wrappers.codecs.LC3plusCodec
+  lc3plus_path: libraries/ETSI_Release/LC3plus_ETSI_src_v172062927c2_20210930
+
+opus:
+  _target_: codec_wrappers.codecs.OpusCodec
+  
+evs:
+  _target_: codec_wrappers.codecs.EVSCodec
+  evs_path: libraries/EVS_3GPP

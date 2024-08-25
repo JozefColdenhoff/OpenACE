@@ -4,6 +4,7 @@ import tempfile
 import soundfile as sf
 import numpy as np
 import subprocess
+from typing import Tuple
 
 
 class AbstractCodec(ABC):
@@ -15,37 +16,30 @@ class AbstractCodec(ABC):
     the required methods.
 
     Args:
-        bitrate (int): The bitrate to be used for encoding the audio.
-        sample_rate (int, optional): The sample rate of the audio. Defaults to None.
         **kwargs: Additional keyword arguments that can be passed to the codec.
 
     Attributes:
-        bitrate (int): The bitrate used for encoding the audio.
-        sample_rate (int): The sample rate of the audio.
         kwargs (dict): Additional keyword arguments passed to the codec.
+        name (str): Name of the codec implementation.
 
     Methods:
-        __call__(input_file: str, output_file: str) -> None:
+        __call__(input_file: str, output_file: str, bitrate:int) -> None:
             Abstract method that should be implemented by concrete codec classes.
             It loads the input audio file, applies the codec encoding/decoding process,
             and saves the processed audio to the specified output file.
     """
     
-    def __init__(self, bitrate: int, sample_rate: int = None, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         """
         Initializes the AbstractCodec instance.
 
         Args:
-            bitrate (int): The bitrate to be used for encoding the audio.
-            sample_rate (int, optional): The sample rate of the audio. Defaults to None.
             **kwargs: Additional keyword arguments that can be passed to the codec.
         """
-        self.bitrate = bitrate
-        self.sample_rate = sample_rate
         self.kwargs = kwargs
         
     @abstractmethod
-    def __call__(self, input_file: str, output_file: str) -> None:
+    def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
         """
         Abstract method that should be implemented by concrete codec classes.
 
@@ -55,6 +49,7 @@ class AbstractCodec(ABC):
         Args:
             input_file (str): The path to the input audio file.
             output_file (str): The path where the processed audio file will be saved.
+            bitrate (int): The bitrate to be used for encoding the audio.
 
         Raises:
             NotImplementedError: If the method is not implemented by a concrete codec class.
@@ -69,9 +64,7 @@ class LC3Codec(AbstractCodec):
     This class provides methods to encode and decode audio files using the LC3 codec.
     It inherits from the AbstractCodec class and implements the required methods.
 
-    Args:
-        bitrate (int): The bitrate to be used for encoding the audio.
-        sample_rate (int, optional): The sample rate of the audio. Defaults to None.
+    Args:        
         **kwargs: Additional keyword arguments. The 'lc3_path' argument is required and
             should specify the path to the LC3 codec binaries.
 
@@ -80,19 +73,20 @@ class LC3Codec(AbstractCodec):
             in the specified 'lc3_path'.
 
     Methods:
-        __call__(input_file: str, output_file: str) -> None:
+        __call__(input_file: str, output_file: str, bitrate:int) -> None:
             Encodes the input audio file using the LC3 codec and decodes the encoded data
             back to an audio file. The encoded data is passed through a pipeline between
             the encoding and decoding processes without saving intermediate files.
     """
-    def __init__(self, bitrate: int, sample_rate: int = None, **kwargs) -> None:
-        super().__init__(bitrate, sample_rate, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.lc3_path = kwargs["lc3_path"]
+        self.name = "LC3"
         
         if (not os.path.exists(os.path.join(self.lc3_path, "bin", "dlc3"))) or (not os.path.exists(os.path.join(self.lc3_path, "bin", "elc3"))):            
             raise RuntimeError(f"liblc3 tools in {self.lc3_path} seem to not be built. Run make tools to build the required binaries.")     
         
-    def __call__(self, input_file: str, output_file: str) -> None:
+    def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
         """
         Encodes the input audio file using the LC3 codec and decodes the encoded data
         back to an audio file. The encoded data is passed through a pipeline between
@@ -101,6 +95,7 @@ class LC3Codec(AbstractCodec):
         Args:
             input_file (str): The path to the input audio file to be encoded.
             output_file (str): The path where the decoded audio file will be saved.
+            bitrate (int): The bitrate to be used for encoding the audio.
         """
         # Set the LD_LIBRARY_PATH environment variable
         bin_path = os.path.join(self.lc3_path, "bin")
@@ -111,7 +106,7 @@ class LC3Codec(AbstractCodec):
         encode_command = [
             os.path.join(bin_path, "elc3"),
             input_file,
-            "-b", str(self.bitrate)
+            "-b", str(bitrate)
         ]
         
         # Decode the encoded data
@@ -141,8 +136,6 @@ class LC3plusCodec(AbstractCodec):
     requires the LC3plus library to be built, including its tools.
 
     Args:
-        bitrate (int): The bitrate to be used for encoding the audio.
-        sample_rate (int): The sample rate of the audio.
         **kwargs: Additional keyword arguments. The 'lc3plus_path' argument is required and
             should specify the path to the LC3plus codec binaries.
 
@@ -151,20 +144,21 @@ class LC3plusCodec(AbstractCodec):
             in the specified 'lc3plus_path'.
 
     Methods:
-        __call__(input_file: str, output_file: str) -> None:
+        __call__(input_file: str, output_file: str, bitrate:int) -> None:
             Encodes the input audio file using the LC3plus codec and decodes the encoded data
             back to an audio file. The encoded data is passed through a pipeline between
             the encoding and decoding processes without saving intermediate files.
     """
-    def __init__(self, bitrate: int, sample_rate: int = None, **kwargs) -> None:
-        super().__init__(bitrate, sample_rate, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.lc3plus_path = kwargs["lc3plus_path"]
         self.lc3plus_bin = os.path.join(self.lc3plus_path, "src", "floating_point", "LC3plus")
+        self.name = "LC3Plus"
 
         if not os.path.exists(self.lc3plus_bin):
             raise RuntimeError(f"LC3plus binary not found at {self.lc3plus_bin}. Make sure the LC3plus library is built.")
 
-    def __call__(self, input_file: str, output_file: str) -> None:
+    def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
         """
         Encodes the input audio file using the LC3plus codec and decodes the encoded data
         back to an audio file. The command is run directly as a shell command.
@@ -175,7 +169,7 @@ class LC3plusCodec(AbstractCodec):
         """
         #TODO: Find another way of not running this as a shell command...
         # Construct the command string
-        command = f"{self.lc3plus_bin} {input_file} {output_file} {self.bitrate}"
+        command = f"{self.lc3plus_bin} {input_file} {output_file} {bitrate}"
 
         try:
             # Run the command using subprocess.run()
@@ -203,8 +197,6 @@ class OpusCodec(AbstractCodec):
     It inherits from the AbstractCodec class and implements the required methods.
 
     Args:
-        bitrate (int): The bitrate to be used for encoding the audio, in bits per second.
-        sample_rate (int, optional): The sample rate of the audio. Defaults to None.
         **kwargs: Additional keyword arguments.
 
     Methods:
@@ -216,19 +208,25 @@ class OpusCodec(AbstractCodec):
         The Opus codec and its command-line tools (opusenc) must be installed and
         accessible through the system's PATH for this class to function properly.
     """
-    def __call__(self, input_file: str, output_file: str) -> None:
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.name = "Opus"
+        
+    def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
         """
         Encodes the input audio file using the Opus codec.
 
         Args:
             input_file (str): The path to the input audio file to be encoded.
             output_file (str): The path where the encoded audio file will be saved.
+            bitrate (int): The bitrate to be used for encoding the audio, in bits per second.
         """
         # Construct the command string
         try:
             # Run the opusenc command using subprocess.run()
             subprocess.run(
-                ["opusenc", "--hard-cbr","--bitrate", str(self.bitrate // 1000), input_file, output_file],
+                ["opusenc", "--hard-cbr","--bitrate", str(bitrate // 1000), input_file, output_file],
                 check=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
@@ -244,26 +242,27 @@ class OpusCodec(AbstractCodec):
 class EVSCodec(AbstractCodec):
     """Concrete implementation of the EVS codec."""
     
-    def __init__(self, bitrate: int, sample_rate: int, **kwargs) -> None:
-        super().__init__(bitrate, sample_rate, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.evs_path = kwargs["evs_path"]
         self.encoder = os.path.join(self.evs_path, "EVS_cod")
         self.decoder = os.path.join(self.evs_path, "EVS_dec")
+        self.name = "EVS"
 
-    def __call__(self, input_file: str, output_file: str) -> None:
+    def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
         # Create temporary files
-        with tempfile.NamedTemporaryFile(suffix=f'.{self.sample_rate // 1000}k', delete=False) as raw_input_file, \
+        with tempfile.NamedTemporaryFile(delete=False) as raw_input_file, \
              tempfile.NamedTemporaryFile(suffix='.192', delete=False) as bitstream_file, \
-             tempfile.NamedTemporaryFile(suffix=f'.{self.sample_rate // 1000}k', delete=False) as raw_output_file:
+             tempfile.NamedTemporaryFile(delete=False) as raw_output_file:
             
             try:
                 # Encode: Convert WAV to raw PCM, encode to bitstream
-                n_channels = self._wav_to_raw(input_file, raw_input_file.name)
-                self._encode(raw_input_file.name, bitstream_file.name)
+                n_channels, samplerate = self._wav_to_raw(input_file, raw_input_file.name)
+                self._encode(raw_input_file.name, bitstream_file.name, bitrate, samplerate)
 
                 # Decode: Convert bitstream to raw PCM, then to WAV
-                self._decode(bitstream_file.name, raw_output_file.name)
-                self._raw_to_wav(raw_output_file.name, output_file, n_channels)         
+                self._decode(bitstream_file.name, raw_output_file.name, samplerate)
+                self._raw_to_wav(raw_output_file.name, output_file, n_channels, samplerate)         
             
             finally:
                 # Ensure temporary files are deleted
@@ -271,13 +270,13 @@ class EVSCodec(AbstractCodec):
                 os.remove(bitstream_file.name)
                 os.remove(raw_output_file.name)
 
-    def _encode(self, raw_file: str, bitstream_file: str) -> None:
+    def _encode(self, raw_file: str, bitstream_file: str, bitrate:int, sample_rate:int) -> None:
         """Encode the raw PCM file to an EVS bitstream."""
         command = [
             self.encoder,
             "-q",
-            str(self.bitrate),
-            str(self.sample_rate // 1000),
+            str(bitrate),
+            str(sample_rate // 1000),
             raw_file,
             bitstream_file,
         ]
@@ -288,12 +287,12 @@ class EVSCodec(AbstractCodec):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL)
 
-    def _decode(self, bitstream_file: str, raw_file: str) -> None:
+    def _decode(self, bitstream_file: str, raw_file: str, sample_rate:int) -> None:
         """Decode the EVS bitstream to a raw PCM file."""
         command = [
             self.decoder,
             "-q",
-            str(self.sample_rate // 1000),
+            str(sample_rate // 1000),
             bitstream_file,
             raw_file,
         ]
@@ -304,18 +303,20 @@ class EVSCodec(AbstractCodec):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL)
 
-    def _wav_to_raw(self, wav_file: str, raw_file: str) -> None:
+    def _wav_to_raw(self, wav_file: str, raw_file: str) -> Tuple[int, int]:
         """Convert a WAV file to raw PCM format expected by the EVS codec."""
         data, samplerate = sf.read(wav_file, dtype='int16')
-        assert samplerate == self.sample_rate, "Input WAV file sample rate must match the specified sample rate."
 
         # Ensure the data is in interleaved format (if multi-channel)
         data.tofile(raw_file)
-        n_channels = data.shape[1]
+        if len(data.shape) > 1:
+            n_channels = data.shape[1]
+        else:
+            n_channels = 1
         
-        return n_channels
+        return n_channels, samplerate
 
-    def _raw_to_wav(self, raw_file: str, wav_file: str, n_channels:int) -> None:
+    def _raw_to_wav(self, raw_file: str, wav_file: str, n_channels:int, sample_rate:int) -> None:
         """Convert raw PCM format back to WAV file."""
 
         # Read the raw PCM data and write to a WAV file
@@ -325,4 +326,4 @@ class EVSCodec(AbstractCodec):
         if n_channels > 1:
             pcm_data = pcm_data.reshape(-1, n_channels)
 
-        sf.write(wav_file, pcm_data, self.sample_rate)
+        sf.write(wav_file, pcm_data, sample_rate)

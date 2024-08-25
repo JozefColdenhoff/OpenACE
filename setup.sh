@@ -1,7 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-cd src/codec_libraries
+# This script sets up the necessary environment and libraries for the CodecBenchmark project.
+# It creates an Anaconda environment, installs various audio processing libraries and tools,
+# and compiles source code for several codecs including liblc3, LC3 Plus, and 3GPP EVS.
+# The script ensures that specific versions or commits of the libraries are used to maintain consistency.
+
+# Create the anaconda environment
+conda env create -f environment.yaml
+source activate CodecBenchmark
+
+# Setup libraries 
+cd src/libraries
 
 # Setup liblc3
 git clone https://github.com/google/liblc3.git
@@ -30,3 +40,10 @@ rm 26442-i00-ANSI-C_source_code.zip
 mv c-code EVS_3GPP
 cd EVS_3GPP/
 make
+cd ../
+
+# Setup VISOQOL library
+git clone https://github.com/google/visqol.git
+cd visqol
+git reset --hard b2b2a64 # Latest version as of 08-2024
+python -m pip install .
