@@ -63,6 +63,32 @@ def compute_visqol_48k_numpy(args):
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
+    """
+    Compute VISQOL scores for a dataset and save the scores to a CSV file.
+
+    This function takes a Hydra configuration object as input, which should contain
+    the path to the metadata file of the dataset. The metadata file should have columns
+    'enc_path' and 'ref_path' representing the paths to the encoded and reference audio
+    files, respectively.
+
+    The function computes the VISQOL scores between the encoded and reference audio files
+    using the `compute_visqol_48k_numpy` function in parallel with `process_map`. The
+    resulting scores are added as a new column 'VISQOL_Scores' to the metadata DataFrame.
+
+    Finally, the updated metadata DataFrame is saved to a new CSV file named 'visqol_scores.csv'
+    in the same directory as the input metadata file.
+
+    Args:
+        cfg (DictConfig): A Hydra configuration object containing the following keys:
+            - metadata_file (str): Path to the metadata CSV file containing 'enc_path' and 'ref_path' columns.
+
+    Raises:
+        RuntimeError: If the 'metadata_file' key is not specified in the Hydra configuration.
+
+    Returns:
+        None
+    """
+    
     if cfg.metadata_file is None:
         raise RuntimeError("Please specify the metadata file of the dataset where the VISQOL scores should be computed on.")
     
