@@ -172,23 +172,20 @@ class LC3plusCodec(AbstractCodec):
     def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
         """
         Encodes the input audio file using the LC3plus codec and decodes the encoded data
-        back to an audio file. The command is run directly as a shell command.
+        back to an audio file.
 
         Args:
             input_file (str): The path to the input audio file to be encoded.
             output_file (str): The path where the decoded audio file will be saved.
         """
-        #TODO: Find another way of not running this as a shell command...
-        # Construct the command string
-        command = f"{self.lc3plus_bin} {input_file} {output_file} {bitrate}"
-
         try:
-            # Run the command using subprocess.run()
+            # Create the command arguments
+            command_args = [self.lc3plus_bin, input_file, output_file, str(bitrate)]
+
+            # Run the command using subprocess.run
             subprocess.run(
-                command,
-                shell=True,
+                command_args,
                 check=True,
-                executable='/bin/bash',
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
