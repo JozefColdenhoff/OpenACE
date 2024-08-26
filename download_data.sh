@@ -19,14 +19,15 @@ wget https://docbox.etsi.org/stq/Open/TS%20103%20281%20Wave%20files/Annex_E%20sp
 cd ../
 
 # ITU-T P.501
+# Due to technical limitations this dataset must be downloaded manually at https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items 
 
 # VCTK Validation
-wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
+# wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
 unzip DS_10283_3443.zip "VCTK-Corpus-0.92.zip" -d "VCTK"
 rm DS_10283_3443.zip
 cd VCTK
-# Extract test speakers as defined by the URGENT challenge script https://github.com/urgent-challenge/urgent2024_challenge/blob/main/utils/prepare_VCTK_speech.sh
-unzip -l VCTK-Corpus-0.92.zip | awk '/p226|p287|p315/ {print $4}' | xargs unzip VCTK-Corpus-0.92.zip
+# Extract test speakers as defined by the URGENT challenge script https://github.com/urgent-challenge/urgent2024_challenge/blob/main/utils/prepare_VCTK_speech.sh We only select mic1 
+unzip -l VCTK-Corpus-0.92.zip | awk '/p226|p287|p315/ && /mic1/ {print $4}' |xargs unzip VCTK-Corpus-0.92.zip
 rm VCTK-Corpus-0.92.zip
 cd ../
 
