@@ -44,7 +44,7 @@ cd src
 ./setup.sh # Installs the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
 ./download_data.sh # Downloads allmost all of the data with the exception of the ITU-T p.501 dataset
 ```
-Manually download the ITU-T p.50 dataset through a browser and unzip it in data/original
+Manually download the (ITU-T p.501 dataset)[https://logitech.slack.com/archives/D06KAEZ11CN/p1724334122715079?thread_ts=1724324197.048169&cid=D06KAEZ11CN] through a browser and unzip it in data/original 
 
 From the src directory run
 ```
