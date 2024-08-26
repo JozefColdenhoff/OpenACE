@@ -23,7 +23,7 @@ This repository contains the code to generate the CodecBenchmark dataset. The co
 ## How to use
 
 ### Dependencies
-This repository automatically installs most of the required dependencies. However it still requires two dependencies listed below. 
+This repository automatically installs most of the required dependencies. However it still requires three dependencies listed below. 
 
 ```
 Make sure the bazel build system is installed to compile and build the VISQOL repository. See 'https://bazel.build/install'
@@ -34,25 +34,35 @@ Install opus-tools
 ```sh
 sudo apt install opus-tools
 ```
+Install miniconda/anaconda
 
 ### Installation and setup
+To setup the rewuired libraries run `./setup.sh` which will install the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
 
-Run these shell scripts in the following order, make sure they are executable using chmod +x SCRIPT.sh
+Then manually download the [ITU-T p.501 dataset](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items) through a browser and place it in the `data/original` folder. 
 
-```
-cd src
-./setup.sh # Installs the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
-./download_data.sh # Downloads allmost all of the data with the exception of the ITU-T p.501 dataset
-```
-Manually download the (ITU-T p.501 dataset)[https://logitech.slack.com/archives/D06KAEZ11CN/p1724334122715079?thread_ts=1724324197.048169&cid=D06KAEZ11CN] through a browser and unzip it in data/original 
+Finally run `./download_data.sh` to download and process the remaining datasets.
 
-From the src directory run
-```
-python -m process_dataset
-```
-This will create a directory tree in the `data/processed` folder. One directory per original reference file will be created. Thereafter the codecs defined in the `src/confic/codecs/default.yaml` file will be applied to the audio and saved to the respective folder. 
-A metadata file will be generated at the end of the process at `data/processed/metadata.csv` containing the paths to the encoded files. 
+Activate the conda env `conda activate CodecBenchmark`
 
+Then from the src directory run
+```sh
+python -m process_dataset bitrate=BITRATE
+```
+or 
+```sh
+python -m process_dataset bitrate=BITRATE test_run=True
+```
+
+This will create a directory tree in the `data/processed/bitrate=BITRATE` folder. One directory per original reference file will be created. Thereafter the codecs defined in the `src/confic/codecs/default.yaml` file will be applied to the audio and saved to the respective folder. 
+A metadata file will be generated at the end of the process at `data/processed/bitrate=BITRATE/metadata.csv` containing the paths to the encoded files. The test `test_run` flag will only run the script on 10 files.
+
+### VISQOL Computation
+To compute VISQOL scores for the encoded files relative to their reference, a script is provided. After running the dataset generation the script can be run with the following command:
+
+```sh
+python -m compute_visqol_scores metadata_file=PATH_TO_METADATA_FILE
+```
 
 # Extra info
 ## Equivalent codec commands 
@@ -72,7 +82,7 @@ LC3plus -E -q -v <in.wav> <out.wav> <bitrate>
 
 ### OPUSEnc opus-tools
 ```sh
-opusenc -hard-cbr -bitrate <bitrate> <in.wav> <out.>
+opusenc --quiet --hard-cbr --bitrate <bitrate> - | opusdec --quiet <out.wav>
 ```
 
 ## EVS ETSI reference implementation

@@ -18,8 +18,6 @@ wget https://docbox.etsi.org/stq/Open/TS%20103%20281%20Wave%20files/Annex_E%20sp
 wget https://docbox.etsi.org/stq/Open/TS%20103%20281%20Wave%20files/Annex_E%20speech%20data/German_P835_16_sentences_4convergence.wav
 cd ../
 
-# ITU-T P.501
-# Due to technical limitations this dataset must be downloaded manually at https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items 
 
 # VCTK Validation
 wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
@@ -51,3 +49,12 @@ rm SQAM.zip
 wget https://zenodo.org/records/10405774/files/ODAQ.zip
 unzip ODAQ.zip "ODAQ/ODAQ_unprocessed/*"
 rm ODAQ.zip
+
+
+# ITU-T P.501
+# Due to technical limitations this dataset must be downloaded manually at https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items 
+unzip T-REC-P.501-202005-I\!\!SOFT-ZST-E.zip -d T-REC-501
+rm T-REC-P.501-202005-I\!\!SOFT-ZST-E.zip
+cd T-REC-501/Speech\ signals/
+unzip \*.zip
+rm *.zip
