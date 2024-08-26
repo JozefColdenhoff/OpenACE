@@ -200,12 +200,46 @@ def apply_and_save_codec(args) -> None:
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
+    """
+    Process an audio dataset, apply codecs, and generate a metadata file.
+
+    This function takes a Hydra configuration object as input and performs the following steps:
+    1. Retrieves a list of unprocessed audio files from the "original" directory.
+    2. If it's a test run, limits the number of files to 10.
+    3. Creates directories to store the processed data based on the bitrate.
+    4. Generates a directory tree for the processed files.
+    5. Converts the original audio files to 24-bit PCM WAV format using parallel processing.
+    6. Applies specified codecs to the processed audio files using parallel processing.
+    7. Generates a metadata file containing information about the encoded and reference files.
+    8. Adds audio metadata to the metadata DataFrame.
+    9. Adds an "encoder" column to the metadata indicating the encoding type.
+    10. Saves the metadata file in the processed data directory.
+
+    Args:
+        cfg (DictConfig): A Hydra configuration object containing the following keys:
+            - test_run (bool): Flag indicating whether it's a test run with a limited number of files.
+            - bitrate (int): The bitrate used for encoding the audio files.
+            - codecs (dict): A dictionary specifying the codecs to be applied to the audio files.
+
+    Returns:
+        None
+    """
     # Get a list of the original unprocessed dataset
     original_data_path = os.path.join(DATA_PATH, "original")
     unprocessed_abs_paths, unprocessed_rel_paths = get_audio_files(path=original_data_path)
     
+    if cfg.test_run:
+        unprocessed_abs_paths = unprocessed_abs_paths[:10]
+        unprocessed_rel_paths = unprocessed_rel_paths[:10]
+    
     # Create the folders to store the processed data
-    processed_root_dir = os.path.join(DATA_PATH, "processed", f"bitrate={cfg.bitrate//1000}")
+    if cfg.test_run:
+        processed_root_dir = os.path.join(DATA_PATH, "processed", f"bitrate={cfg.bitrate//1000}_test")
+    else:
+        processed_root_dir = os.path.join(DATA_PATH, "processed", f"bitrate={cfg.bitrate//1000}")
+    
+    os.makedirs(processed_root_dir)
+    
     generate_directory_tree(
         file_paths=unprocessed_rel_paths, 
         new_root_dir=processed_root_dir
@@ -234,6 +268,10 @@ def main(cfg: DictConfig):
         )
     
     metadata = add_audio_metadata_to_df(metadata, path_column="enc_path")
+    
+    # Add encoding type
+    metadata["encoder"] = metadata["enc_path"].apply(lambda x: x.split(os.sep)[-1].split(".")[0])
+    
     metadata.to_csv(
         os.path.join(
             processed_root_dir,

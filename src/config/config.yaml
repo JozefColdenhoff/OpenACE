@@ -3,3 +3,7 @@ defaults:
  - codecs: default
 
 bitrate: 128000
+metadata_file: None
+
+# If set to true, only a small subset of 100 random files is used
+test_run: False
