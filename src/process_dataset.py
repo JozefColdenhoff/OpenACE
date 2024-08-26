@@ -135,6 +135,22 @@ def generate_directory_tree(file_paths: List[str], new_root_dir: str) -> None:
         os.makedirs(new_directory, exist_ok=True)
 
 def process_and_save_reference_file(args):
+    """
+    Processes a reference audio file and saves it with a specific naming convention.
+
+    This function takes a tuple of arguments containing the absolute file path, relative file path,
+    and a new root directory. It reads the audio data from the file, resamples it to 48kHz if necessary,
+    and saves the processed audio file with a specific naming convention based on the sample rate.
+
+    Parameters:
+        args (tuple): A tuple containing the following elements:
+            - abs_filepath (str): The absolute file path of the reference audio file.
+            - rel_filepath (str): The relative file path of the reference audio file.
+            - new_root (str): The new root directory where the processed audio file will be saved.
+
+    Returns:
+        None
+    """
     abs_filepath, rel_filepath, new_root = args
     
     data, samplerate = sf.read(abs_filepath)
@@ -157,13 +173,30 @@ def process_and_save_reference_file(args):
         )
 
 def apply_and_save_codec(args) -> None:
+    """
+    Applies a specified audio codec to an audio file and saves the encoded file.
+
+    This function takes a tuple of arguments containing the original file path, the codec to be applied,
+    and the desired bitrate. It applies the specified codec to the original audio file and saves the
+    encoded file in the same directory as the original file, with the codec name appended to the filename.
+
+    Parameters:
+        args (tuple): A tuple containing the following elements:
+            - original_path (str): The file path of the original audio file.
+            - codec (Callable): The audio codec to be applied. It should be a callable object that takes
+                                the original file path, the new file path, and the bitrate as arguments.
+            - bitrate (int): The desired bitrate for the encoded audio file.
+
+    Returns:
+        str: The file path of the newly encoded audio file.
+    """
     original_path, codec, bitrate = args
     new_path = os.path.join(
         os.path.dirname(original_path),
         codec.name + ".wav"        
         )
     codec(original_path, new_path, bitrate)
-    return new_path
+    return new_path, original_path
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
@@ -171,8 +204,8 @@ def main(cfg: DictConfig):
     original_data_path = os.path.join(DATA_PATH, "original")
     unprocessed_abs_paths, unprocessed_rel_paths = get_audio_files(path=original_data_path)
     
-    # Create the folders to store the processed data 
-    processed_root_dir = os.path.join(DATA_PATH, "processed")
+    # Create the folders to store the processed data
+    processed_root_dir = os.path.join(DATA_PATH, "processed", f"bitrate={cfg.bitrate//1000}")
     generate_directory_tree(
         file_paths=unprocessed_rel_paths, 
         new_root_dir=processed_root_dir
@@ -195,15 +228,16 @@ def main(cfg: DictConfig):
     
     metadata = pd.DataFrame(
         data={
-            "abs_path":encoded_paths, 
+            "enc_path":[x[0] for x in encoded_paths],
+            "ref_path": [x[1] for x in encoded_paths]
             }
         )
     
-    metadata = add_audio_metadata_to_df(metadata, path_column="abs_path")
+    metadata = add_audio_metadata_to_df(metadata, path_column="enc_path")
     metadata.to_csv(
         os.path.join(
             processed_root_dir,
-            "metadata.csv"
+            f"metadata_bitrate={cfg.bitrate//1000}.csv"
         ),
         index=False
     )
