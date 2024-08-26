@@ -22,7 +22,7 @@ cd ../
 # Due to technical limitations this dataset must be downloaded manually at https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items 
 
 # VCTK Validation
-# wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
+wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
 unzip DS_10283_3443.zip "VCTK-Corpus-0.92.zip" -d "VCTK"
 rm DS_10283_3443.zip
 cd VCTK
