@@ -115,8 +115,19 @@ class LC3Codec(AbstractCodec):
         ]
         
         # Create a pipeline between the encoding and decoding commands
-        encode_process = subprocess.Popen(encode_command, stdout=subprocess.PIPE, env=env)
-        decode_process = subprocess.Popen(decode_command, stdin=encode_process.stdout, stdout=subprocess.PIPE, env=env)
+        encode_process = subprocess.Popen(
+            encode_command, 
+            stdout=subprocess.PIPE, 
+            env=env,
+            stderr=subprocess.DEVNULL)
+        
+        decode_process = subprocess.Popen(
+            decode_command, 
+            stdin=encode_process.stdout, 
+            stdout=subprocess.PIPE, 
+            env=env,
+            stderr=subprocess.DEVNULL
+            )
         
         # Wait for the processes to finish and capture the output
         output, _ = decode_process.communicate()
@@ -213,7 +224,7 @@ class OpusCodec(AbstractCodec):
         super().__init__(**kwargs)
         self.name = "Opus"
         
-    def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
+    def __call__(self, input_file: str, output_file: str, bitrate: int) -> None:
         """
         Encodes the input audio file using the Opus codec.
 
@@ -222,15 +233,38 @@ class OpusCodec(AbstractCodec):
             output_file (str): The path where the encoded audio file will be saved.
             bitrate (int): The bitrate to be used for encoding the audio, in bits per second.
         """
-        # Construct the command string
         try:
-            # Run the opusenc command using subprocess.run()
-            subprocess.run(
-                ["opusenc", "--hard-cbr","--bitrate", str(bitrate // 1000), input_file, output_file],
-                check=True,
+            # Open the input file in binary mode
+            with open(input_file, "rb") as file:
+                input_data = file.read()
+
+            # Create the opusenc process
+            opusenc_process = subprocess.Popen(
+                ["opusenc", "--quiet", "--hard-cbr", "--bitrate", str(bitrate // 1000), "-", "-"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL
+            )
+
+            # Create the opusdec process
+            opusdec_process = subprocess.Popen(
+                ["opusdec", "--quiet", "-", output_file],
+                stdin=opusenc_process.stdout,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
+
+            # Write the input data to opusenc's stdin
+            opusenc_process.stdin.write(input_data)
+            opusenc_process.stdin.close()
+
+            # Wait for both processes to finish
+            opusenc_process.wait()
+            opusdec_process.wait()
+
+            # Check if the processes completed successfully
+            if opusenc_process.returncode != 0 or opusdec_process.returncode != 0:
+                raise subprocess.CalledProcessError(opusenc_process.returncode, "opusenc | opusdec")
 
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Opus encoding failed with exit code: {e.returncode}")
