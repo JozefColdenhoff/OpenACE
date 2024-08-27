@@ -23,7 +23,7 @@ This repository contains the code to generate the CodecBenchmark dataset. The co
 ## How to use
 
 ### Dependencies
-This repository automatically installs most of the required dependencies. However it still requires three dependencies listed below. 
+This repository automatically installs most of the required dependencies. However it still requires some dependencies listed below. 
 
 ```
 Make sure the bazel build system is installed to compile and build the VISQOL repository. See 'https://bazel.build/install'
@@ -36,6 +36,10 @@ sudo apt install opus-tools
 ```
 Install miniconda/anaconda see https://docs.anaconda.com/miniconda/
 
+Install ffmpeg
+```sh
+sudo apt install ffmpeg
+```
 ### Installation and setup
 #### Process the datasets and unify the format
 1. To setup the required libraries run `./setup.sh` which will install the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
