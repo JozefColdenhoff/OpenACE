@@ -34,28 +34,31 @@ Install opus-tools
 ```sh
 sudo apt install opus-tools
 ```
-Install miniconda/anaconda
+Install miniconda/anaconda see https://docs.anaconda.com/miniconda/
 
 ### Installation and setup
-To setup the rewuired libraries run `./setup.sh` which will install the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
+#### Process the datasets and unify the format
+1. To setup the required libraries run `./setup.sh` which will install the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
 
-Then manually download the [ITU-T p.501 dataset](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items) through a browser and place it in the `data/original` folder. 
+2. Then manually download the [ITU-T p.501 dataset](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items) through a browser and place it in the `data/original` folder. 
 
-Finally run `./download_data.sh` to download and process the remaining datasets.
+3. Finally run `./generate_dataset.sh` to download and process the remaining datasets.
 
+
+#### Generate the encoded audio
 Activate the conda env `conda activate CodecBenchmark`
 
-Then from the src directory run
+Then from the src directory run the following to apply the codecs to the fullband signals in the benchmark
 ```sh
-python -m process_dataset bitrate=BITRATE
+python -m apply_codecs bitrate=BITRATE data_subsets=fullband
 ```
 or 
 ```sh
-python -m process_dataset bitrate=BITRATE test_run=True
+python -m apply_codecs bitrate=BITRATE test_run=True data_subsets=fullband
 ```
 
-This will create a directory tree in the `data/processed/bitrate=BITRATE` folder. One directory per original reference file will be created. Thereafter the codecs defined in the `src/confic/codecs/default.yaml` file will be applied to the audio and saved to the respective folder. 
-A metadata file will be generated at the end of the process at `data/processed/bitrate=BITRATE/metadata.csv` containing the paths to the encoded files. The test `test_run` flag will only run the script on 10 files.
+This will create a directory tree in the `data/processed/` folder. One directory per original reference file will be created. Thereafter the codecs defined in the `src/confic/codecs/default.yaml` file will be applied to the audio and saved to the respective folder. 
+A metadata file will be generated at the end of the process at `data/processed/.../metadata.csv` containing the paths to the encoded files. The test `test_run` flag will only run the script on 10 files.
 
 ### VISQOL Computation
 To compute VISQOL scores for the encoded files relative to their reference, a script is provided. After running the dataset generation the script can be run with the following command:
@@ -85,7 +88,7 @@ LC3plus -E -q -v <in.wav> <out.wav> <bitrate>
 opusenc --quiet --hard-cbr --bitrate <bitrate> - | opusdec --quiet <out.wav>
 ```
 
-## EVS ETSI reference implementation
+### EVS ETSI reference implementation
 Uses binary audio files for input and output, so wrapper converts them to this file format.
 ```sh
 EVS_cod -q <bitrate> <sample rate kHz> <in.48k> <out.192>
