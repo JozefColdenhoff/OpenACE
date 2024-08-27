@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+project_root=$(pwd)
 cd data/original
 
 # IEEE 269-2010
@@ -20,7 +21,7 @@ cd ../
 
 
 # VCTK Validation
-wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
+# wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
 unzip DS_10283_3443.zip "VCTK-Corpus-0.92.zip" -d "VCTK"
 rm DS_10283_3443.zip
 cd VCTK
@@ -45,7 +46,7 @@ mkdir EBU_SQAM
 unzip SQAM.zip -d EBU_SQAM
 rm SQAM.zip
 
-# # ODAQ
+# # # ODAQ
 wget https://zenodo.org/records/10405774/files/ODAQ.zip
 unzip ODAQ.zip "ODAQ/ODAQ_unprocessed/*"
 rm ODAQ.zip
@@ -54,7 +55,44 @@ rm ODAQ.zip
 # ITU-T P.501
 # Due to technical limitations this dataset must be downloaded manually at https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items 
 unzip T-REC-P.501-202005-I\!\!SOFT-ZST-E.zip -d T-REC-501
-rm T-REC-P.501-202005-I\!\!SOFT-ZST-E.zip
 cd T-REC-501/Speech\ signals/
 unzip \*.zip
 rm *.zip
+cd ../../ 
+
+
+# Convert all .flac files to 16-bit PCM wav files
+echo "Converting .flac files. May take some time..."
+# Enable globstar for recursive file matching
+shopt -s globstar
+
+# Set the input directory to the current working directory
+data_base_path=$(pwd)
+
+# Loop through all .flac files in the input directory and its subfolders
+for file in "$data_base_path"/**/*.flac; do
+  # Check if the file exists
+  if [ -e "$file" ]; then
+    # Get the directory path of the current file
+    dir=$(dirname "$file")
+    
+    # Get the filename without the extension
+    filename=$(basename "$file" .flac)
+    
+    # Set the output file path
+    output_file="$dir/$filename.wav"
+    
+    # Convert the .flac file to .wav using ffmpeg
+    ffmpeg -hide_banner -loglevel error -i "$file" -acodec pcm_s16le "$output_file"
+    
+    # Remove the original .flac file
+    rm "$file"
+  else
+    echo "File not found: $file"
+  fi
+done
+
+# Generate metadata file
+source activate CodecBenchmark
+cd "$project_root"/src 
+python -m utils.generate_metadata --base_path "$data_base_path"
