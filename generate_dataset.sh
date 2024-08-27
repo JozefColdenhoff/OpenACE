@@ -21,7 +21,7 @@ cd ../
 
 
 # VCTK Validation
-# wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
+wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
 unzip DS_10283_3443.zip "VCTK-Corpus-0.92.zip" -d "VCTK"
 rm DS_10283_3443.zip
 cd VCTK
