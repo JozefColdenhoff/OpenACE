@@ -6,10 +6,12 @@ import resampy
 import os
 from omegaconf import DictConfig
 import hydra
+from ast import literal_eval
 from hydra.utils import instantiate
+from hydra.core.hydra_config import HydraConfig
 from tqdm.contrib.concurrent import process_map
 from definitions import DATA_PATH
-from utils.utils import get_audio_files, add_audio_metadata_to_df
+from utils.utils import get_audio_files, add_audio_metadata_to_df, get_audio_metadata
 
 def generate_directory_tree(file_paths: List[str], new_root_dir: str) -> None:
     """
@@ -63,13 +65,13 @@ def process_and_save_reference_file(args):
     Returns:
         None
     """
-    abs_filepath, rel_filepath, new_root = args
+    abs_filepath, rel_filepath, new_root, resample_fullband = args
     
     data, samplerate = sf.read(abs_filepath)
         
     save_folder, _ = os.path.splitext(rel_filepath)
     
-    if samplerate == 44100:
+    if samplerate == 44100 and resample_fullband:
         data = resampy.resample(data, samplerate, 48000, filter='kaiser_best')    
         samplerate = 48000
         new_save_path = os.path.join(new_root, save_folder, "reference_re.wav")
@@ -110,6 +112,24 @@ def apply_and_save_codec(args) -> None:
     codec(original_path, new_path, bitrate)
     return new_path, original_path
 
+def filter_audio(cfg:DictConfig, abs_paths:List[str], rel_paths:List[str]):
+    
+    subset_cfg = cfg.data_subsets
+    filtered_abs_paths = []
+    filtered_rel_paths = []
+    
+    for abs_path, rel_path in zip(abs_paths, rel_paths):
+        audio_metadata = get_audio_metadata(abs_path)
+        
+        if subset_cfg.sample_rates is not None:
+            if audio_metadata["sample_rate"] not in subset_cfg.sample_rates:
+                continue
+        
+        filtered_abs_paths.append(abs_path)
+        filtered_rel_paths.append(rel_path)
+    
+    return filtered_abs_paths, filtered_rel_paths
+
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
     """
@@ -136,22 +156,32 @@ def main(cfg: DictConfig):
     Returns:
         None
     """
+
+    subset_name = cfg.data_subsets.subset_name
+    
+    # Create the folders to store the processed data
+    if cfg.test_run:
+        processed_root_dir = os.path.join(DATA_PATH, "processed", f"subset={subset_name}-bitrate={cfg.bitrate//1000}-test")
+    else:
+        processed_root_dir = os.path.join(DATA_PATH, "processed", f"subset={subset_name}-bitrate={cfg.bitrate//1000}")
+    
+    os.makedirs(processed_root_dir)    
+    
     # Get a list of the original unprocessed dataset
     original_data_path = os.path.join(DATA_PATH, "original")
     unprocessed_abs_paths, unprocessed_rel_paths = get_audio_files(path=original_data_path)
     
+    # Filter for specific subset
+    unprocessed_abs_paths, unprocessed_rel_paths = filter_audio(
+        cfg, 
+        unprocessed_abs_paths, 
+        unprocessed_rel_paths
+        )
+        
     if cfg.test_run:
         unprocessed_abs_paths = unprocessed_abs_paths[:10]
-        unprocessed_rel_paths = unprocessed_rel_paths[:10]
-    
-    # Create the folders to store the processed data
-    if cfg.test_run:
-        processed_root_dir = os.path.join(DATA_PATH, "processed", f"bitrate={cfg.bitrate//1000}_test")
-    else:
-        processed_root_dir = os.path.join(DATA_PATH, "processed", f"bitrate={cfg.bitrate//1000}")
-    
-    os.makedirs(processed_root_dir)
-    
+        unprocessed_rel_paths = unprocessed_rel_paths[:10]   
+   
     generate_directory_tree(
         file_paths=unprocessed_rel_paths, 
         new_root_dir=processed_root_dir
@@ -159,7 +189,7 @@ def main(cfg: DictConfig):
 
     # Convert all the original audio to 24-bit PCM wav files. 
     # Create a list of arguments for each file
-    file_args = [(abs_path, rel_path, processed_root_dir) for abs_path, rel_path in zip(unprocessed_abs_paths, unprocessed_rel_paths)]
+    file_args = [(abs_path, rel_path, processed_root_dir, cfg.resample_fullband) for abs_path, rel_path in zip(unprocessed_abs_paths, unprocessed_rel_paths)]
     # Use process_map to process files concurrently
     process_map(process_and_save_reference_file, file_args, max_workers=10, chunksize=1)
     

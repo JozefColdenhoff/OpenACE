@@ -1,0 +1,4 @@
+subset_name: fullband
+sample_rates:
+  - 44100
+  - 48000
