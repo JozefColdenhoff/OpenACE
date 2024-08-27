@@ -44,6 +44,10 @@ def compute_visqol_48k_numpy(args):
     if len(reference_data.shape) > 1:
         reference_data = reference_data.mean(axis=1)
     
+    # Take first 10 seconds
+    degraded_data = degraded_data[:, :10*48]
+    reference_data = degraded_data[:, :10*48]
+    
     degraded_data = degraded_data.astype(np.float64)
     reference_data = reference_data.astype(np.float64)
     
