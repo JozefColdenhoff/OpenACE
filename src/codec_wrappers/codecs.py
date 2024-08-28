@@ -4,6 +4,7 @@ import tempfile
 import soundfile as sf
 import numpy as np
 import subprocess
+from utils.utils import get_audio_metadata
 from typing import Tuple
 
 
@@ -56,6 +57,12 @@ class AbstractCodec(ABC):
         """
         raise NotImplementedError("Subclasses must implement the __call__ method.")
     
+    def _verify_audio(self, path):
+        audio_metadata = get_audio_metadata(path)
+        # Assert that audio is mono
+        if audio_metadata["channels"] != 1:
+            raise ValueError(f"Audio must be mono {path}")
+    
     
 class LC3Codec(AbstractCodec):
     """
@@ -97,6 +104,8 @@ class LC3Codec(AbstractCodec):
             output_file (str): The path where the decoded audio file will be saved.
             bitrate (int): The bitrate to be used for encoding the audio.
         """
+        self._verify_audio(input_file)
+        
         # Set the LD_LIBRARY_PATH environment variable
         bin_path = os.path.join(self.lc3_path, "bin")
         env = os.environ.copy()
@@ -178,6 +187,7 @@ class LC3plusCodec(AbstractCodec):
             input_file (str): The path to the input audio file to be encoded.
             output_file (str): The path where the decoded audio file will be saved.
         """
+        self._verify_audio(input_file)
         try:
             # Create the command arguments
             command_args = [self.lc3plus_bin, input_file, output_file, str(bitrate)]
@@ -230,6 +240,7 @@ class OpusCodec(AbstractCodec):
             output_file (str): The path where the encoded audio file will be saved.
             bitrate (int): The bitrate to be used for encoding the audio, in bits per second.
         """
+        self._verify_audio(input_file)
         try:
             # Open the input file in binary mode
             with open(input_file, "rb") as file:
@@ -281,6 +292,7 @@ class EVSCodec(AbstractCodec):
         self.name = "EVS"
 
     def __call__(self, input_file: str, output_file: str, bitrate:int) -> None:
+        self._verify_audio(input_file)
         # Create temporary files
         with tempfile.NamedTemporaryFile(delete=False) as raw_input_file, \
              tempfile.NamedTemporaryFile(suffix='.192', delete=False) as bitstream_file, \
@@ -288,12 +300,12 @@ class EVSCodec(AbstractCodec):
             
             try:
                 # Encode: Convert WAV to raw PCM, encode to bitstream
-                n_channels, samplerate = self._wav_to_raw(input_file, raw_input_file.name)
+                samplerate = self._wav_to_raw(input_file, raw_input_file.name)
                 self._encode(raw_input_file.name, bitstream_file.name, bitrate, samplerate)
 
                 # Decode: Convert bitstream to raw PCM, then to WAV
                 self._decode(bitstream_file.name, raw_output_file.name, samplerate)
-                self._raw_to_wav(raw_output_file.name, output_file, n_channels, samplerate)         
+                self._raw_to_wav(raw_output_file.name, output_file, samplerate)         
             
             finally:
                 # Ensure temporary files are deleted
@@ -303,14 +315,21 @@ class EVSCodec(AbstractCodec):
 
     def _encode(self, raw_file: str, bitstream_file: str, bitrate:int, sample_rate:int) -> None:
         """Encode the raw PCM file to an EVS bitstream."""
+        
         command = [
             self.encoder,
+            "-mime",
             "-q",
             str(bitrate),
             str(sample_rate // 1000),
             raw_file,
             bitstream_file,
         ]
+        
+        if sample_rate == 48000:
+            command.insert(1, "FB")
+            command.insert(1, "-max_band")
+            
         
         subprocess.run(
             command, 
@@ -322,6 +341,7 @@ class EVSCodec(AbstractCodec):
         """Decode the EVS bitstream to a raw PCM file."""
         command = [
             self.decoder,
+            "-mime",
             "-q",
             str(sample_rate // 1000),
             bitstream_file,
@@ -338,23 +358,15 @@ class EVSCodec(AbstractCodec):
         """Convert a WAV file to raw PCM format expected by the EVS codec."""
         data, samplerate = sf.read(wav_file, dtype='int16')
 
-        # Ensure the data is in interleaved format (if multi-channel)
         data.tofile(raw_file)
-        if len(data.shape) > 1:
-            n_channels = data.shape[1]
-        else:
-            n_channels = 1
         
-        return n_channels, samplerate
+        return samplerate
 
-    def _raw_to_wav(self, raw_file: str, wav_file: str, n_channels:int, sample_rate:int) -> None:
+    def _raw_to_wav(self, raw_file: str, wav_file: str, sample_rate:int) -> None:
         """Convert raw PCM format back to WAV file."""
 
         # Read the raw PCM data and write to a WAV file
+        # Audio is assumed to be mono
         pcm_data = np.fromfile(raw_file, dtype='int16')
-        
-        # Reshape the data if it's stereo or multi-channel
-        if n_channels > 1:
-            pcm_data = pcm_data.reshape(-1, n_channels)
 
         sf.write(wav_file, pcm_data, sample_rate)
