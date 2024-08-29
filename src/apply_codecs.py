@@ -6,6 +6,7 @@ import resampy
 import os
 from omegaconf import DictConfig
 import hydra
+from omegaconf import OmegaConf
 from ast import literal_eval
 from hydra.utils import instantiate
 from hydra.core.hydra_config import HydraConfig
@@ -156,14 +157,17 @@ def main(cfg: DictConfig):
     Returns:
         None
     """
-
-    subset_name = cfg.data_subsets.subset_name
+    
+    hydra_cfg = HydraConfig.get()
+    parameters = OmegaConf.to_container(hydra_cfg.runtime.choices)
+    subset_name = parameters["data_subsets"]
+    codec_set = parameters["codecs"]
     
     # Create the folders to store the processed data
     if cfg.test_run:
-        processed_root_dir = os.path.join(DATA_PATH, "processed", f"subset={subset_name}-bitrate={cfg.bitrate//1000}-test")
+        processed_root_dir = os.path.join(DATA_PATH, "processed", f"codecs={codec_set}-subset={subset_name}-bitrate={cfg.bitrate//1000}-test")
     else:
-        processed_root_dir = os.path.join(DATA_PATH, "processed", f"subset={subset_name}-bitrate={cfg.bitrate//1000}")
+        processed_root_dir = os.path.join(DATA_PATH, "processed", f"codecs={codec_set}-subset={subset_name}-bitrate={cfg.bitrate//1000}")
     
     os.makedirs(processed_root_dir)    
     
