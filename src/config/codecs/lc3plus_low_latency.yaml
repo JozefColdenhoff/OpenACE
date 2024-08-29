@@ -1,0 +1,4 @@
+lc3plus:
+  _target_: codec_wrappers.codecs.LC3plusCodec
+  lc3plus_path: libraries/ETSI_Release/LC3plus_ETSI_src_v172062927c2_20210930
+  frame_ms: 2.5

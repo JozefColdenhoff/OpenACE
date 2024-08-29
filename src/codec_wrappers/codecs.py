@@ -174,6 +174,11 @@ class LC3plusCodec(AbstractCodec):
         self.lc3plus_path = kwargs["lc3plus_path"]
         self.lc3plus_bin = os.path.join(self.lc3plus_path, "src", "floating_point", "LC3plus")
         self.name = "LC3Plus"
+        
+        if "frame_ms" in kwargs:
+            self.frame_ms = kwargs["frame_ms"]
+        else:
+            self.frame_ms = None
 
         if not os.path.exists(self.lc3plus_bin):
             raise RuntimeError(f"LC3plus binary not found at {self.lc3plus_bin}. Make sure the LC3plus library is built.")
@@ -190,7 +195,10 @@ class LC3plusCodec(AbstractCodec):
         self._verify_audio(input_file)
         try:
             # Create the command arguments
-            command_args = [self.lc3plus_bin, input_file, output_file, str(bitrate)]
+            if self.frame_ms is None:
+                command_args = [self.lc3plus_bin, input_file, output_file, str(bitrate)]
+            else:
+                command_args = [self.lc3plus_bin, "-frame_ms", str(self.frame_ms), input_file, output_file, str(bitrate)]
 
             # Run the command using subprocess.run
             subprocess.run(
@@ -295,7 +303,7 @@ class EVSCodec(AbstractCodec):
         self._verify_audio(input_file)
         # Create temporary files
         with tempfile.NamedTemporaryFile(delete=False) as raw_input_file, \
-             tempfile.NamedTemporaryFile(suffix='.192', delete=False) as bitstream_file, \
+             tempfile.NamedTemporaryFile(suffix='.mime', delete=False) as bitstream_file, \
              tempfile.NamedTemporaryFile(delete=False) as raw_output_file:
             
             try:
@@ -319,7 +327,7 @@ class EVSCodec(AbstractCodec):
         command = [
             self.encoder,
             "-mime",
-            "-q",
+            # "-q",
             str(bitrate),
             str(sample_rate // 1000),
             raw_file,
@@ -335,7 +343,8 @@ class EVSCodec(AbstractCodec):
             command, 
             check=True, 
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
+            stderr=subprocess.DEVNULL
+            )
 
     def _decode(self, bitstream_file: str, raw_file: str, sample_rate:int) -> None:
         """Decode the EVS bitstream to a raw PCM file."""
