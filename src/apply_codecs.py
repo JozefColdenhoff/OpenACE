@@ -84,7 +84,7 @@ def process_and_save_reference_file(args):
         file=new_save_path, 
         data=data,
         samplerate=samplerate,
-        subtype="PCM_24"
+        subtype="PCM_16"
         )
 
 def apply_and_save_codec(args) -> None:
@@ -141,7 +141,7 @@ def main(cfg: DictConfig):
     2. If it's a test run, limits the number of files to 10.
     3. Creates directories to store the processed data based on the bitrate.
     4. Generates a directory tree for the processed files.
-    5. Converts the original audio files to 24-bit PCM WAV format using parallel processing.
+    5. Converts the original audio files to 16-bit PCM WAV format using parallel processing.
     6. Applies specified codecs to the processed audio files using parallel processing.
     7. Generates a metadata file containing information about the encoded and reference files.
     8. Adds audio metadata to the metadata DataFrame.
@@ -191,7 +191,7 @@ def main(cfg: DictConfig):
         new_root_dir=processed_root_dir
         )    
 
-    # Convert all the original audio to 24-bit PCM wav files. 
+    # Convert all the original audio to 16-bit PCM wav files. 
     # Create a list of arguments for each file
     file_args = [(abs_path, rel_path, processed_root_dir, cfg.resample_fullband) for abs_path, rel_path in zip(unprocessed_abs_paths, unprocessed_rel_paths)]
     # Use process_map to process files concurrently
