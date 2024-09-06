@@ -327,7 +327,7 @@ class EVSCodec(AbstractCodec):
         command = [
             self.encoder,
             "-mime",
-            # "-q",
+            "-q",
             str(bitrate),
             str(sample_rate // 1000),
             raw_file,
