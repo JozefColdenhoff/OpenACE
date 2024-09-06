@@ -47,7 +47,7 @@ def filter_and_save_signal(path: str, passband: float, stopband: float, gpass: f
         file=new_path,
         data=filtered,
         samplerate=fs,
-        subtype="PCM_24"
+        subtype="PCM_16"
     )
     
 
