@@ -86,17 +86,17 @@ $ elc3 <in.wav> -b <bitrate> | dlc3 > <out.wav>
 
 ### LC3Plus ETSI
 ```sh
-LC3plus -E -q -v <in.wav> <out.wav> <bitrate>
+LC3plus <in.wav> <out.wav> <bitrate>
 ```
 
 ### OPUSEnc opus-tools
 ```sh
-opusenc --quiet --hard-cbr --bitrate <bitrate> - | opusdec --quiet <out.wav>
+opusenc --quiet --hard-cbr --bitrate <bitrate> - - | opusdec --quiet <out.wav>
 ```
 
 ### EVS ETSI reference implementation
 Uses binary audio files for input and output, so wrapper converts them to this file format.
 ```sh
-EVS_cod -q <bitrate> <sample rate kHz> <in.48k> <out.192>
-EVS_dec -q <sample rate kHz> <out.192> <out.48k>
+EVS_cod -q -mime <bitrate> <sample rate kHz> <in.raw> <out.bitstream>
+EVS_dec -q <sample rate kHz> <out.bitstream> <out.raw>
 ```
