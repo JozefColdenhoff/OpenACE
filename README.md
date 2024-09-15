@@ -18,7 +18,7 @@ Conference
 </div>
  
 ## Description   
-This repository contains the code to generate the CodecBenchmark dataset. The code allows for the automatic application of codecs, and is easily extensible to any other codecs. Currently only tested on Ubuntu Linux. 
+This repository contains the code to generate the OpenACE dataset. The code allows for the automatic application of codecs, and is easily extensible to any other codecs. Currently only tested on Ubuntu Linux. 
 
 ## How to use
 
