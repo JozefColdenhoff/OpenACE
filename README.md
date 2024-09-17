@@ -72,6 +72,20 @@ To compute VISQOL scores for the encoded files relative to their reference, a sc
 ```sh
 python -m compute_visqol_scores metadata_file=PATH_TO_METADATA_FILE
 ```
+# Citation
+If you use the OpenACE dataset in any of your research, please cite the following paper:
+
+```
+@misc{coldenhoff2024openaceopenbenchmarkevaluating,
+      title={OpenACE: An Open Benchmark for Evaluating Audio Coding Performance}, 
+      author={Jozef Coldenhoff and Niclas Granqvist and Milos Cernak},
+      year={2024},
+      eprint={2409.08374},
+      archivePrefix={arXiv},
+      primaryClass={eess.AS},
+      url={https://arxiv.org/abs/2409.08374}, 
+}
+```
 
 # Extra info
 ## Equivalent codec commands 
