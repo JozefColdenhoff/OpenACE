@@ -72,6 +72,13 @@ To compute VISQOL scores for the encoded files relative to their reference, a sc
 ```sh
 python -m compute_visqol_scores metadata_file=PATH_TO_METADATA_FILE
 ```
+# Visqol scores reproduction
+To reproduce the VISQOL results of table 3 of our paper the following commands be run assuming that the source data is downloaded, and that the environment is set up. 
+- Generate the 16 kb/s dataset `python -m apply_codecs bitrate=16400 data_subsets=fullband`
+- Compute VISQOL scores `python -m compute_visqol_scores metadata_file="PROJECT_ROOT/data/processed/codecs\=default-dubset\=fullband-bitrate\=16/metadata_bitrate\=16.csv"`
+- This will save a csv file containing the VISQOL scores in the folder containing the metadata. 
+- Repeat for bitrates {32000, 64000} 
+
 # Citation
 If you use the OpenACE dataset in any of your research, please cite the following paper:
 
