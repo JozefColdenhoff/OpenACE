@@ -30,7 +30,7 @@ To implement a custom codec, you need to create a class that inherits from the `
 __call__(self, input_file: str, output_file: str, bitrate: int)
 ```
 
-This method handles reading the `input_file`, applying the codec logic, and saving the processed data to the specified `output_file` as a `.wav`. Additionally, your class should define an attribute `self.name`, which determines the structure of the output folder. For guidance, review the existing codec implementations in the `src/codec_wrappers/codecs.py` file.
+This method handles reading the `input_file`, applying the codec logic, and saving the processed data to the specified `output_file` as a `.wav`. Additionally, your class should define an attribute `self.name` (name of the codec), which determines the structure of the output folder. For guidance, review the existing codec implementations in the `src/codec_wrappers/codecs.py` file.
 
 To use your custom codec (or any codec), create a `yaml` configuration file in the `src/config/codec` directory with the following structure:
 
