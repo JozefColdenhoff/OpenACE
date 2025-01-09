@@ -22,49 +22,18 @@ This repository contains the code to generate the OpenACE dataset. The code allo
 
 ## How to use
 
-### Dependencies
-This repository automatically installs most of the required dependencies. However it still requires some dependencies listed below. 
+Follow the installation and setup in [INSTALL.md](INSTALL.md)
 
-```
-Make sure the bazel build system is installed to compile and build the VISQOL repository. See 'https://bazel.build/install'. On Ubuntu Linux, you can follow 'https://bazel.build/install/ubuntu#install-on-ubuntu'.
-```
-
-Install opus-tools 
-
+### Audio encoding and decoding
+Run the following to apply the codecs to the fullband signals in the benchmark
 ```sh
-sudo apt install opus-tools
-```
-Install miniconda/anaconda see https://docs.anaconda.com/miniconda/
-
-Install ffmpeg
-```sh
-sudo apt install ffmpeg
-```
-### Installation and setup
-#### Process the datasets and unify the format
-1. To setup the required libraries run `./setup.sh` which will install the codec dependencies liblc3, LC3Plus, EVS, and the quality metric VISQOL
-
-2. Then manually download the [ITU-T p.501 dataset](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-P.501-202005-I!!SOFT-ZST-E&type=items) through a browser and place it in the `data/original` folder. 
-
-3. Activate the conda environment created by ./setup.sh `conda activate CodecBenchmark`
-
-4. Finally run `./generate_dataset.sh` to download and process the remaining datasets.
-
-
-#### Generate the encoded audio
-Activate the conda env `conda activate CodecBenchmark`
-
-Then from the src directory run the following to apply the codecs to the fullband signals in the benchmark
-```sh
+conda activate CodecBenchmark; cd src
 python -m apply_codecs bitrate=BITRATE data_subsets=fullband
 ```
-or 
-```sh
-python -m apply_codecs bitrate=BITRATE test_run=True data_subsets=fullband
-```
+You can use `test_run=True` option to run a limited number of files (10) test.
 
 This will create a directory tree in the `data/processed/` folder. One directory per original reference file will be created. Thereafter the codecs defined in the `src/confic/codecs/default.yaml` file will be applied to the audio and saved to the respective folder. 
-A metadata file will be generated at the end of the process at `data/processed/.../metadata.csv` containing the paths to the encoded files. The test `test_run` flag will only run the script on 10 files.
+A metadata file will be generated at the end of the process at `data/processed/.../metadata.csv` containing the paths to the encoded files.
 
 ### VISQOL Computation
 To compute VISQOL scores for the encoded files relative to their reference, a script is provided. After running the dataset generation the script can be run with the following command:
@@ -72,14 +41,21 @@ To compute VISQOL scores for the encoded files relative to their reference, a sc
 ```sh
 python -m compute_visqol_scores metadata_file=PATH_TO_METADATA_FILE
 ```
-# Visqol scores reproduction
+
+## Examples
+
+### Visqol scores reproduction
 To reproduce the VISQOL results of table 3 of our paper the following commands be run assuming that the source data is downloaded, and that the environment is set up. 
 - Generate the 16 kb/s dataset `python -m apply_codecs bitrate=16400 data_subsets=fullband`
 - Compute VISQOL scores `python -m compute_visqol_scores metadata_file="PROJECT_ROOT/data/processed/codecs\=default-dubset\=fullband-bitrate\=16/metadata_bitrate\=16.csv"`
 - This will save a csv file containing the VISQOL scores in the folder containing the metadata. 
 - Repeat for bitrates {32000, 64000} 
 
-# Citation
+### Subjective evaluation of emotional speech at 16 kbps
+
+
+
+## Citation
 If you use the OpenACE dataset in any of your research, please cite the following paper:
 
 ```

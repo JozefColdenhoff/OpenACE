@@ -6,10 +6,6 @@ set -euo pipefail
 # and compiles source code for several codecs including liblc3, LC3 Plus, and 3GPP EVS.
 # The script ensures that specific versions or commits of the libraries are used to maintain consistency.
 
-# Create the anaconda environment
-conda env create -f environment.yaml
-source activate CodecBenchmark
-
 # Setup libraries 
 cd src/libraries
 
