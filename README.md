@@ -1,20 +1,7 @@
 <div align="center">    
  
 # OpenACE
-<!-- 
-[![Paper](http://img.shields.io/badge/paper-arxiv.1001.2234-B31B1B.svg)](https://www.nature.com/articles/nature14539)
-[![Conference](http://img.shields.io/badge/NeurIPS-2019-4b44ce.svg)](https://papers.nips.cc/book/advances-in-neural-information-processing-systems-31-2018)
-[![Conference](http://img.shields.io/badge/ICLR-2019-4b44ce.svg)](https://papers.nips.cc/book/advances-in-neural-information-processing-systems-31-2018)
-[![Conference](http://img.shields.io/badge/AnyConference-year-4b44ce.svg)](https://papers.nips.cc/book/advances-in-neural-information-processing-systems-31-2018)   -->
-<!--
-ARXIV   
-[![Paper](http://img.shields.io/badge/arxiv-math.co:1480.1111-B31B1B.svg)](https://www.nature.com/articles/nature14539)
--->
 
-
-<!--  
-Conference   
--->   
 </div>
  
 ## Description   
@@ -34,6 +21,38 @@ You can use `test_run=True` option to run a limited number of files (10) test.
 
 This will create a directory tree in the `data/processed/` folder. One directory per original reference file will be created. Thereafter the codecs defined in the `src/confic/codecs/default.yaml` file will be applied to the audio and saved to the respective folder. 
 A metadata file will be generated at the end of the process at `data/processed/.../metadata.csv` containing the paths to the encoded files.
+
+### Creating Your Own Codec
+
+To implement a custom codec, you need to create a class that inherits from the `AbstractCodec` class located in `src/codec_wrappers/codecs.py`. Your implementation must include the following method:
+
+```python
+__call__(self, input_file: str, output_file: str, bitrate: int)
+```
+
+This method handles reading the `input_file`, applying the codec logic, and saving the processed data to the specified `output_file` as a `.wav`. Additionally, your class should define an attribute `self.name`, which determines the structure of the output folder. For guidance, review the existing codec implementations in the `src/codec_wrappers/codecs.py` file.
+
+To use your custom codec (or any codec), create a `yaml` configuration file in the `src/config/codec` directory with the following structure:
+
+```yaml
+yourcodec:
+  _target_: codec_wrappers.codecs.YourCodecClass
+  some_init_argument: foobar  
+
+yourothercodec:
+  _target_: codec_wrappers.codecs.YourOtherCodecClass
+  some_other_init_argument: bazz  
+```
+
+Alternatively, you can integrate your codec configuration into the `default.yaml` file to include it alongside the pre-existing codecs.
+
+Once configured, you can apply your codec to the data by running the following command, replacing `YOUR_CODEC_CONFIG_NAME` with the appropriate name from your YAML file:
+
+```
+python -m apply_codecs codecs=YOUR_CODEC_CONFIG_NAME
+```
+
+For more detailed usage, refer to the "Examples" section.
 
 ### VISQOL Computation
 To compute VISQOL scores for the encoded files relative to their reference, a script is provided. After running the dataset generation the script can be run with the following command:
