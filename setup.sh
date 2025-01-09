@@ -9,6 +9,12 @@ set -euo pipefail
 # Setup libraries 
 cd src/libraries
 
+# Setup VISOQOL library
+git clone https://github.com/google/visqol.git
+cd visqol
+git reset --hard b2b2a64 # Latest version as of 08-2024
+python -m pip install .
+
 # Setup liblc3
 git clone https://github.com/google/liblc3.git
 cd liblc3
@@ -37,9 +43,3 @@ mv c-code EVS_3GPP
 cd EVS_3GPP/
 make
 cd ../
-
-# Setup VISOQOL library
-git clone https://github.com/google/visqol.git
-cd visqol
-git reset --hard b2b2a64 # Latest version as of 08-2024
-python -m pip install .
