@@ -7,9 +7,32 @@
 ## Description   
 This repository contains the code to generate the OpenACE dataset. The code allows for the automatic application of codecs, and is easily extensible to any other codecs. Currently only tested on Ubuntu Linux. 
 
-## How to use
+## Installation and data download
 
-Follow the installation and setup in [INSTALL.md](INSTALL.md)
+Follow the installation, setup, and data download in [INSTALL.md](INSTALL.md).
+
+## Data
+
+The openACE benchamark is a collection of open-source datasets that are released with various data file formats, number of channels, sampling frequencies and the bit depth. The downloaded data is located in `data/original`, together with generated `metadata.csv`.
+
+![OpenACE benchamark](openACE.jpeg)
+
+Subsets can be easily obtained from the metadata file, for example:
+```sh
+# All 32 bit encoded audio files
+grep '32 bit' data/original/metadata.csv | awk -F, '{print $2}' # .flac or .wav, mono or strereo, etc.
+```
+
+In most of use-cases the unified audio format (*.wav), the number of channels (mono) and the bith depth (16 bits) is desired. You can obtain it with
+```sh
+conda activate CodecBenchmark
+./preprocess_data.sh # process data/original and saves it in data/mono-16bit-wav
+
+# Get all fullband files
+grep -E '44100|48000' data/mono-16bit-wav/metadata.csv | awk -F, '{print $2}'
+```
+
+## How to use
 
 ### Audio encoding and decoding
 Run the following to apply the codecs to the fullband signals in the benchmark
@@ -69,10 +92,6 @@ To reproduce the VISQOL results of table 3 of our paper the following commands b
 - Compute VISQOL scores `python -m compute_visqol_scores metadata_file="PROJECT_ROOT/data/processed/codecs\=default-dubset\=fullband-bitrate\=16/metadata_bitrate\=16.csv"`
 - This will save a csv file containing the VISQOL scores in the folder containing the metadata. 
 - Repeat for bitrates {32000, 64000} 
-
-### Subjective evaluation of emotional speech at 16 kbps
-
-
 
 ## Citation
 If you use the OpenACE dataset in any of your research, please cite the following paper:

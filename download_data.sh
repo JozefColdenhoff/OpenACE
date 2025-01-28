@@ -21,7 +21,7 @@ cd ../
 
 
 # VCTK Validation
-# wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
+wget "https://datashare.ed.ac.uk/download/DS_10283_3443.zip"
 unzip DS_10283_3443.zip "VCTK-Corpus-0.92.zip" -d "VCTK"
 rm DS_10283_3443.zip
 cd VCTK
@@ -60,65 +60,7 @@ unzip \*.zip
 rm *.zip
 cd ../../ 
 
-
-# Convert all .flac files to 16-bit PCM wav files
-echo "Converting .flac files. May take some time..."
-# Enable globstar for recursive file matching
-shopt -s globstar
-
-# Set the input directory to the current working directory
-data_base_path=$(pwd)
-
-# Loop through all .flac files in the input directory and its subfolders
-for file in "$data_base_path"/**/*.flac; do
-  # Check if the file exists
-  if [ -e "$file" ]; then
-    # Get the directory path of the current file
-    dir=$(dirname "$file")
-    
-    # Get the filename without the extension
-    filename=$(basename "$file" .flac)
-    
-    # Set the output file path
-    output_file="$dir/$filename.wav"
-    
-    # Convert the .flac file to .wav using ffmpeg
-    ffmpeg -hide_banner -loglevel error -i "$file" -acodec pcm_s16le "$output_file"
-    
-    # Remove the original .flac file
-    rm "$file"
-  else
-    echo "File not found: $file"
-  fi
-done
-
-# Downmix all files to mono 
-# Loop through all .wav files in the input directory and its subfolders
-for file in "$data_base_path"/**/*.wav; do
-  # Check if the file exists
-  if [ -e "$file" ]; then
-    # Get the directory path of the current file
-    dir=$(dirname "$file")
-    
-    # Get the filename without the extension
-    filename=$(basename "$file" .wav)
-    
-    # Set the output file path for mono wav
-    output_file_mono="$dir/$filename-mono.wav"
-    
-    # Downmix the .wav file to mono using ffmpeg
-    ffmpeg -hide_banner -loglevel error -i "$file" -ac 1 "$output_file_mono"
-    
-    # Remove the original .wav file
-    rm "$file"
-    
-    # Rename the mono file to the original filename
-    mv "$output_file_mono" "$dir/$filename.wav"
-  else
-    echo "File not found: $file"
-  fi
-done
-
 # Generate metadata file
 cd "$project_root"/src 
-python -m utils.generate_metadata --base_path "$data_base_path"
+echo "Generating metadata file in $project_root/data/original"
+python -m utils.generate_metadata --base_path "$project_root/data/original"

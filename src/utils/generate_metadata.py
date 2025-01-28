@@ -25,7 +25,7 @@ def main(base_path):
             }
         )
     metadata = add_audio_metadata_to_df(metadata, path_column="abs_path")
-    metadata.to_csv(os.path.join(base_path, "reference_metadata.csv"))
+    metadata.to_csv(os.path.join(base_path, "metadata.csv"))
 
 if __name__ == "__main__":
     parser = ArgumentParser()
