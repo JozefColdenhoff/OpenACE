@@ -5,7 +5,8 @@
 </div>
  
 ## Description   
-This repository contains the code to generate the OpenACE dataset. The code allows for the automatic application of codecs, and is easily extensible to any other codecs. Currently only tested on Ubuntu Linux. 
+
+This repository is a collaborative audio and speech coding resource that addresses a lack of unified evaluation and open-source testing, and contributes to audio and speech coding democratization. Current version implements the [OpenACE benchamark](https://arxiv.org/abs/2409.08374) with Opus, 3GPP's EVS, and recent ETSI's LC3 and LC3+ codec baselines, and it is tested only on Ubuntu Linux.
 
 ## Installation and data download
 
@@ -93,23 +94,8 @@ To reproduce the VISQOL results of table 3 of our paper the following commands b
 - This will save a csv file containing the VISQOL scores in the folder containing the metadata. 
 - Repeat for bitrates {32000, 64000} 
 
-## Citation
-If you use the OpenACE dataset in any of your research, please cite the following paper:
 
-```
-@misc{coldenhoff2024openaceopenbenchmarkevaluating,
-      title={OpenACE: An Open Benchmark for Evaluating Audio Coding Performance}, 
-      author={Jozef Coldenhoff and Niclas Granqvist and Milos Cernak},
-      year={2024},
-      eprint={2409.08374},
-      archivePrefix={arXiv},
-      primaryClass={eess.AS},
-      url={https://arxiv.org/abs/2409.08374}, 
-}
-```
-
-# Extra info
-## Equivalent codec commands 
+## Extra info
 
 ### liblc3
 
@@ -135,3 +121,23 @@ Uses binary audio files for input and output, so wrapper converts them to this f
 EVS_cod -q -mime <bitrate> <sample rate kHz> <in.raw> <out.bitstream>
 EVS_dec -q <sample rate kHz> <out.bitstream> <out.raw>
 ```
+## ICASSP 2025
+
+If you use the OpenACE dataset in any of your work, please cite the following [paper](https://arxiv.org/abs/2409.08374):
+
+```
+@inproceedings{Coldenhoff2025OpenACE,
+      title={{OpenACE: An Open Benchmark for Evaluating Audio Coding Performance}}, 
+      author={Jozef Coldenhoff and Niclas Granqvist and Milos Cernak},
+      year={2025},
+      month={April},
+      address={Hyderabad, India},
+      booktitle={IEEE International Conference on Acoustics Speech and Signal Processing (ICASSP)}
+}
+```
+
+## Call for Collaboration
+- add distortions of enviromental noises such as wind noise, and reverberation
+- add transmission error modeling such as radio frequency interference, and packet loss
+- add multi-channel codecs and spatial audio 
+- facilitate subjective testing with on-premise (like [this](https://github.com/Netflix-Skunkworks/listening-test-app)) or online (like [this](https://senselabonline.com/)) apps.
