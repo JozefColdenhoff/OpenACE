@@ -87,8 +87,13 @@ python -m compute_visqol_scores metadata_file=PATH_TO_METADATA_FILE
 
 ## Examples
 
-### Visqol scores reproduction
-To reproduce the VISQOL results of table 3 of our paper the following commands be run assuming that the source data is downloaded, and that the environment is set up. 
+### Subjective evaluation of emotional speech at 16 kbps
+
+To replicate subjective evaluation, use please the reference and encoded files from the [EARS-EMO-OpenACE] dataset. The dataset comes with the human MUSHRA test ratings obtained from 36 listeners.
+
+### Objetive evaluation
+
+The EARS-EMO-OpenACE contains the computed VISQOL and POLQA scores. To reproduce the VISQOL results of table 3 of our paper the following commands be run assuming that the source data is downloaded, and that the environment is set up. 
 - Generate the 16 kb/s dataset `python -m apply_codecs bitrate=16400 data_subsets=fullband`
 - Compute VISQOL scores `python -m compute_visqol_scores metadata_file="PROJECT_ROOT/data/processed/codecs\=default-dubset\=fullband-bitrate\=16/metadata_bitrate\=16.csv"`
 - This will save a csv file containing the VISQOL scores in the folder containing the metadata. 
