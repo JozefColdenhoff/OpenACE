@@ -89,7 +89,7 @@ python -m compute_visqol_scores metadata_file=PATH_TO_METADATA_FILE
 
 ### Subjective evaluation of emotional speech at 16 kbps
 
-To replicate subjective evaluation, use please the reference and encoded files from the [EARS-EMO-OpenACE] dataset. The dataset comes with the human MUSHRA test ratings obtained from 36 listeners.
+To replicate subjective evaluation, use please the reference and encoded files from the [EARS-EMO-OpenACE](https://huggingface.co/datasets/mcernak/EARS-EMO-OpenACE) dataset. The dataset comes with the human MUSHRA test ratings obtained from 36 listeners.
 
 ### Objetive evaluation
 
